@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Prediction</title>
+</head>
+<body>
+    <h2>다음날 종가 예측</h2>
+    <label for="inputData">입력 데이터 (Open, High, Low, Close):</label>
+    <input type="text" id="inputData" placeholder="예: 70000, 71000, 69000, 70500">
+    <button onclick="makePrediction()">예측</button>
+
+    <h3>예측 결과: <span id="result"></span></h3>
+
+    <script>
+        async function makePrediction() {
+            const data = document.getElementById("inputData").value.split(',').map(Number);
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data })
+            });
+            const result = await response.json();
+            document.getElementById("result").innerText = result.prediction;
+        }
+    </script>
+</body>
+</html>
