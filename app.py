@@ -35,24 +35,34 @@ def home():
 # 예측 엔드포인트
 @app.route('/predict', methods=['POST'])
 def predict():
-    # 사용자 입력 값 받기
-    data = request.form
-    open_price = float(data['Open'])
-    high_price = float(data['High'])
-    low_price = float(data['Low'])
-    close_price = float(data['Close'])
+    try:
+        # JSON 데이터에서 입력 값 추출
+        data = request.get_json()
+        if not data or 'data' not in data:
+            return jsonify({"error": "요청에 데이터가 포함되어 있지 않습니다."}), 400
 
-    # 데이터 정규화 및 텐서화
-    input_data = np.array([[open_price, high_price, low_price, close_price]])
-    input_data = scaler.transform(input_data)  # 정규화
-    input_data = torch.Tensor(input_data).unsqueeze(0)  # 배치 차원 추가
+        input_data = data['data']
 
-    # 예측
-    with torch.no_grad():
-        prediction = model(input_data).item()
-    prediction = scaler.inverse_transform([[0, 0, 0, prediction]])[0][3]  # Close 역정규화
+        # 입력 데이터가 올바른지 확인
+        if not isinstance(input_data, list) or len(input_data) != 4:
+            return jsonify({"error": "잘못된 입력입니다. Open, High, Low, Close 데이터를 제공하세요."}), 400
 
-    return jsonify({'Predicted Close': round(prediction, 2)})
+        # 데이터 정규화 및 입력 변환
+        input_data = np.array([input_data])
+        input_data = scaler.transform(input_data)  # 스케일러로 정규화
+        input_data = np.expand_dims(input_data, axis=0)  # 배치 차원 추가
+        input_data = torch.Tensor(input_data)
+
+        # 예측
+        with torch.no_grad():
+            prediction = model(input_data).item()
+        prediction = scaler.inverse_transform([[0, 0, 0, prediction]])[0][3]  # Close 역정규화
+
+        return jsonify({"prediction": round(prediction, 2)})
+
+    except Exception as e:
+        # 예외가 발생할 경우 JSON으로 에러 반환
+        return jsonify({"error": "예측 중 오류가 발생했습니다.", "details": str(e)}), 500
 
 if __name__ == '__main__':
     app.run()

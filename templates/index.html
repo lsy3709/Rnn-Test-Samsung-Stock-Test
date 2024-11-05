@@ -5,24 +5,36 @@
     <title>Stock Prediction</title>
 </head>
 <body>
-    <h2>다음날 종가 예측</h2>
-    <label for="inputData">입력 데이터 (Open, High, Low, Close):</label>
-    <input type="text" id="inputData" placeholder="예: 70000, 71000, 69000, 70500">
-    <button onclick="makePrediction()">예측</button>
+<h2>다음날 종가 예측</h2>
+<label for="inputData">입력 데이터 (Open, High, Low, Close):</label>
+<input type="text" id="inputData" placeholder="예: 70000, 71000, 69000, 70500">
+<button onclick="makePrediction()">예측</button>
 
-    <h3>예측 결과: <span id="result"></span></h3>
+<h3>예측 결과: <span id="result"></span></h3>
 
-    <script>
-        async function makePrediction() {
-            const data = document.getElementById("inputData").value.split(',').map(Number);
+<script>
+    async function makePrediction() {
+        const data = document.getElementById("inputData").value.split(',').map(Number);
+
+        try {
             const response = await fetch('/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data })
+                body: JSON.stringify({ data: data })
             });
-            const result = await response.json();
-            document.getElementById("result").innerText = result.prediction;
+
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById("result").innerText = result.prediction;
+            } else {
+                document.getElementById("result").innerText = "예측 요청 중 서버 오류가 발생했습니다.";
+            }
+        } catch (error) {
+            document.getElementById("result").innerText = "예측 중 오류가 발생했습니다. 입력 데이터를 확인하세요.";
+            console.error("Error:", error);
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
