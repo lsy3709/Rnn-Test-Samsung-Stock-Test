@@ -82,7 +82,8 @@ def get_stock_data():
     data.columns = data.columns.get_level_values(0)  # 첫 번째 레벨만 선택하여 열 이름을 단순화
 
     # 최근 2일치 데이터를 선택하고 JSON으로 반환
-    last_two_days = data.tail(2)[['Open', 'Low', 'High', 'Close']]
+    # last_two_days = data.tail(2)[['Open', 'Low', 'High', 'Close']]
+    last_two_days = data.tail(3).iloc[:-1][['Open', 'Low', 'High', 'Close']]
     last_two_days = last_two_days.reset_index()  # Date 인덱스를 컬럼으로 변환
     last_two_days['Date'] = last_two_days['Date'].astype(str)  # Date 열을 문자열로 변환
 
