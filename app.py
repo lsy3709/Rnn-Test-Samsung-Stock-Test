@@ -43,26 +43,30 @@ def predict():
 
         input_data = data['data']
 
-        # 입력 데이터가 올바른지 확인
-        if not isinstance(input_data, list) or len(input_data) != 4:
-            return jsonify({"error": "잘못된 입력입니다. Open, High, Low, Close 데이터를 제공하세요."}), 400
+        # 입력 데이터가 올바른지 확인 (2일치 데이터 확인)
+        if not isinstance(input_data, list) or len(input_data) != 2:
+            return jsonify({"error": "잘못된 입력입니다. 2일치 Open, High, Low, Close 데이터를 제공하세요."}), 400
 
-        # 데이터 정규화 및 입력 변환
-        input_data = np.array([input_data])
+        # 입력된 2일치 데이터를 numpy 배열로 변환 후 스케일링
+        input_data = np.array(input_data)  # 2일간의 입력 데이터 배열 생성
         input_data = scaler.transform(input_data)  # 스케일러로 정규화
         input_data = np.expand_dims(input_data, axis=0)  # 배치 차원 추가
         input_data = torch.Tensor(input_data)
 
-        # 예측
+        # 예측 수행
         with torch.no_grad():
             prediction = model(input_data).item()
-        prediction = scaler.inverse_transform([[0, 0, 0, prediction]])[0][3]  # Close 역정규화
 
+        # 예측 결과를 종가 기준으로 역정규화
+        prediction = scaler.inverse_transform([[0, 0, 0, prediction]])[0][3]
+
+        # 예측 결과 반환
         return jsonify({"prediction": round(prediction, 2)})
 
     except Exception as e:
         # 예외가 발생할 경우 JSON으로 에러 반환
         return jsonify({"error": "예측 중 오류가 발생했습니다.", "details": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run()
