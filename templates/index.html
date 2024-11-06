@@ -6,6 +6,9 @@
 </head>
 <body>
     <h1>삼성 주가 예측 모델 (2일 데이터 입력)</h1>
+    <button onclick="autoFillData()">최근 2일치 데이터 자동 입력</button>
+    <br><br>
+
     <form id="predictForm">
         <!-- 첫 번째 날 데이터 입력 -->
         <h3>첫 번째 날</h3>
@@ -66,6 +69,33 @@
                 document.getElementById('predictionResult').innerText = "예측 요청 중 오류 발생";
                 console.error('Error:', error);
             });
+        }
+
+        // 자동으로 값을 채우는 함수
+        function autoFillData() {
+            fetch('/get_stock_data')  // 서버에서 최근 2일치 주가 데이터를 가져옴
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length >= 2) {
+                        // 첫 번째 날 데이터
+                        document.querySelector('[name="open_1"]').value = data[0].Open.toFixed(2);
+                        document.querySelector('[name="low_1"]').value = data[0].Low.toFixed(2);
+                        document.querySelector('[name="high_1"]').value = data[0].High.toFixed(2);
+                        document.querySelector('[name="close_1"]').value = data[0].Close.toFixed(2);
+
+                        // 두 번째 날 데이터
+                        document.querySelector('[name="open_2"]').value = data[1].Open.toFixed(2);
+                        document.querySelector('[name="low_2"]').value = data[1].Low.toFixed(2);
+                        document.querySelector('[name="high_2"]').value = data[1].High.toFixed(2);
+                        document.querySelector('[name="close_2"]').value = data[1].Close.toFixed(2);
+                    } else {
+                        alert("데이터가 충분하지 않습니다.");
+                    }
+                })
+                .catch(error => {
+                    alert("데이터를 가져오는 중 오류가 발생했습니다.");
+                    console.error('Error:', error);
+                });
         }
     </script>
 </body>

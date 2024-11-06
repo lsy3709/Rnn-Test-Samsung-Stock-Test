@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import torch
 import numpy as np
 import torch.nn as nn
+import yfinance as yf
 app = Flask(__name__)
 
 
@@ -63,9 +64,32 @@ def predict():
         # 예측 결과 반환
         return jsonify({"prediction": round(prediction, 2)})
 
+
     except Exception as e:
         # 예외가 발생할 경우 JSON으로 에러 반환
         return jsonify({"error": "예측 중 오류가 발생했습니다.", "details": str(e)}), 500
+
+
+@app.route('/get_stock_data', methods=['GET'])
+def get_stock_data():
+    # 삼성전자 종목 코드: '005930.KS' (야후 파이낸스 형식)
+    ticker = '005930.KS'
+    data = yf.download(ticker, period='5d', interval='1d')  # 최근 5일간 일간 데이터 가져오기
+    # 데이터 확인용: 열 이름 출력
+    print("데이터 열 이름:", data.columns)
+
+    # MultiIndex가 설정된 열 이름을 단일 인덱스로 변환
+    data.columns = data.columns.get_level_values(0)  # 첫 번째 레벨만 선택하여 열 이름을 단순화
+
+    # 최근 2일치 데이터를 선택하고 JSON으로 반환
+    last_two_days = data.tail(2)[['Open', 'Low', 'High', 'Close']]
+    last_two_days = last_two_days.reset_index()  # Date 인덱스를 컬럼으로 변환
+    last_two_days['Date'] = last_two_days['Date'].astype(str)  # Date 열을 문자열로 변환
+
+    # DataFrame을 JSON 변환 가능한 딕셔너리로 변환
+    stock_data = last_two_days.to_dict(orient='records')
+
+    return jsonify(stock_data)
 
 
 if __name__ == '__main__':
