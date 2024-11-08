@@ -52,13 +52,14 @@ def predict2():
         period = data['period']
 
         # 기간에 따른 데이터 길이 정의
+        # 당일 꺼로 확인시, 하루씩 빼기
         period_days_map = {
             '1d': 1,
-            '5d': 5,
-            '1mo': 23,
-            '3mo': 60,
-            '6mo': 124,
-            '1y': 245
+            '5d': 4,
+            '1mo': 22,
+            '3mo': 59,
+            '6mo': 123,
+            '1y': 244
         }
 
         if period not in period_days_map:
@@ -117,8 +118,14 @@ def get_stock_data2():
     # MultiIndex가 설정된 경우 첫 번째 레벨만 선택하여 열 이름을 단순화
     data.columns = data.columns.get_level_values(0)
 
-    # 요청된 기간의 데이터를 선택
-    data_subset = data[['Open', 'Low', 'High', 'Close']]
+    # 요청된 기간의 데이터 처리
+    if period == '1d':
+        # 1일의 경우 그대로 반환
+        data_subset = data[['Open', 'Low', 'High', 'Close']]
+    else:
+        # 나머지 기간의 경우 최근 1일을 제외하고 반환
+        data_subset = data.iloc[:-1][['Open', 'Low', 'High', 'Close']]
+
     data_subset = data_subset.reset_index()  # Date 인덱스를 컬럼으로 변환
     data_subset['Date'] = data_subset['Date'].astype(str)  # Date 열을 문자열로 변환
 

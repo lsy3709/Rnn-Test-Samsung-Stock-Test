@@ -9,10 +9,10 @@
 <form id="periodForm">
     <label><input type="radio" name="period" value="1d"> 1일</label><br>
     <label><input type="radio" name="period" value="5d"> 5일</label><br>
-    <label><input type="radio" name="period" value="1mo"> 1개월</label><br>
-    <label><input type="radio" name="period" value="3mo"> 3개월</label><br>
-    <label><input type="radio" name="period" value="6mo"> 6개월</label><br>
-    <label><input type="radio" name="period" value="1y"> 1년</label><br>
+    <label><input type="radio" name="period" value="1mo"> 1개월(실제일수:23일)</label><br>
+    <label><input type="radio" name="period" value="3mo"> 3개월(실제일수:60일)</label><br>
+    <label><input type="radio" name="period" value="6mo"> 6개월(실제일수:124일)</label><br>
+    <label><input type="radio" name="period" value="1y"> 1년(실제일수:245일)</label><br>
     <button type="button" id="fetchDataButton">데이터 가져오기</button>
 </form>
 <button type="button" onclick="makePrediction2()">예측하기_동적</button>
@@ -66,7 +66,6 @@
     });
 
 
-
     // 동적 기간, 예측
     function makePrediction2() {
         // 선택된 기간 확인
@@ -81,9 +80,17 @@
         // 기간에 따라 데이터를 수집 (여기서는 최대 2일 예시로)
         const data = [];
         const days = getDaysBasedOnPeriod(periodValue); // 기간에 따라 일 수 결정
-       console.log("days : " + days)
+        console.log("days : " + days)
+        if (days == 1) {
+            data.push([
+                parseFloat(document.querySelector(`[name="open_1"]`).value) || 0,
+                parseFloat(document.querySelector(`[name="low_1"]`).value) || 0,
+                parseFloat(document.querySelector(`[name="high_1"]`).value) || 0,
+                parseFloat(document.querySelector(`[name="close_1"]`).value) || 0
+            ]);
+        }
 
-        for (let i = 1; i <= days; i++) {
+        for (let i = 1; i <= days - 1; i++) {
             data.push([
                 parseFloat(document.querySelector(`[name="open_${i}"]`).value) || 0,
                 parseFloat(document.querySelector(`[name="low_${i}"]`).value) || 0,
