@@ -92,6 +92,32 @@ def get_stock_data():
 
     return jsonify(stock_data)
 
+# 요청 일수에 따라 동적으로 받기
+@app.route('/get_stock_data2', methods=['GET'])
+def get_stock_data2():
+    # 클라이언트가 요청한 기간
+    period = request.args.get('period', default='5d')  # 기본값은 '5d'
+
+    # 삼성전자 종목 코드: '005930.KS' (야후 파이낸스 형식)
+    ticker = '005930.KS'
+    # 요청된 기간의 데이터를 가져오기
+    data = yf.download(ticker, period=period, interval='1d')
+
+    # 데이터 열 이름 출력 (확인용)
+    print("데이터 열 이름:", data.columns)
+
+    # MultiIndex가 설정된 경우 첫 번째 레벨만 선택하여 열 이름을 단순화
+    data.columns = data.columns.get_level_values(0)
+
+    # 요청된 기간의 데이터를 선택
+    data_subset = data[['Open', 'Low', 'High', 'Close']]
+    data_subset = data_subset.reset_index()  # Date 인덱스를 컬럼으로 변환
+    data_subset['Date'] = data_subset['Date'].astype(str)  # Date 열을 문자열로 변환
+
+    # DataFrame을 JSON으로 변환 가능한 딕셔너리로 변환
+    stock_data = data_subset.to_dict(orient='records')
+
+    return jsonify(stock_data)
 
 if __name__ == '__main__':
     app.run()
