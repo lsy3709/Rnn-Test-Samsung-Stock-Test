@@ -3,7 +3,9 @@ import torch
 import numpy as np
 import torch.nn as nn
 import yfinance as yf
+from flask_cors import CORS
 app = Flask(__name__)
+CORS(app)
 
 
 # 모델 및 스케일러 로드
@@ -69,7 +71,66 @@ def predict():
         # 예외가 발생할 경우 JSON으로 에러 반환
         return jsonify({"error": "예측 중 오류가 발생했습니다.", "details": str(e)}), 500
 
+# 동적(기간별) 예측
+@app.route('/predict2', methods=['POST'])
+def predict2():
+    try:
+        # JSON 데이터에서 입력 값 추출
+        data = request.get_json()
+        if not data or 'data' not in data or 'period' not in data:
+            print("데이터가 수신되지 않았거나 유효하지 않습니다.")
+            return jsonify({"error": "요청에 데이터 또는 기간 정보가 포함되어 있지 않습니다."}), 400
 
+        print("수신된 데이터:", data)  # Debug print to check received data
+        input_data = data['data']
+        period = data['period']
+
+        # 기간에 따른 데이터 길이 정의
+        period_days_map = {
+            '1d': 1,
+            '5d': 5,
+            '1mo': 30,
+            '3mo': 90,
+            '6mo': 180,
+            '1y': 365
+        }
+
+        if period not in period_days_map:
+            print("지원되지 않는 기간입니다:", period)
+            return jsonify({"error": "지원되지 않는 기간입니다."}), 400
+
+        expected_length = period_days_map[period]
+
+        # 입력 데이터가 올바른지 확인
+        if not isinstance(input_data, list) or len(input_data) != expected_length:
+            print(f"잘못된 입력입니다. {expected_length}일치 데이터가 필요합니다.")
+            return jsonify({"error": f"잘못된 입력입니다. {expected_length}일치 Open, High, Low, Close 데이터를 제공하세요."}), 400
+
+        # 이후 로직 처리...
+        print("처리할 데이터:", input_data)
+
+        # 입력된 데이터를 numpy 배열로 변환 후 스케일링
+        input_data = np.array(input_data)  # 입력 데이터 배열 생성
+        input_data = scaler.transform(input_data)  # 스케일러로 정규화
+        input_data = np.expand_dims(input_data, axis=0)  # 배치 차원 추가
+        input_data = torch.Tensor(input_data)
+
+        # 예측 수행
+        with torch.no_grad():
+            prediction = model(input_data).item()
+
+        # 예측 결과를 종가 기준으로 역정규화
+        prediction = scaler.inverse_transform([[0, 0, 0, prediction]])[0][3]
+
+        # 예측 결과 및 확인 메시지 출력
+        print(f"예측된 값 (종가): {round(prediction, 2)}")
+
+        # 예측 결과 반환
+        return jsonify({"prediction": round(prediction, 2)})
+
+    except Exception as e:
+        print(f"예측 중 오류 발생: {str(e)}")
+        return jsonify({"error": "예측 중 오류가 발생했습니다.", "details": str(e)}), 500
 @app.route('/get_stock_data', methods=['GET'])
 def get_stock_data():
     # 삼성전자 종목 코드: '005930.KS' (야후 파이낸스 형식)
