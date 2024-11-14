@@ -15,10 +15,14 @@
     <label><input type="radio" name="period" value="1y"> 1년(실제일수:245일)</label><br>
     <button type="button" id="fetchDataButton">데이터 가져오기</button>
 </form>
-<button type="button" onclick="makePrediction2()">예측하기_동적</button>
+<!-- 수정 -->
+<button type="button" onclick="makePrediction2('RNN')">RNN_예측하기_동적</button>
+<button type="button" onclick="makePrediction2('LSTM')">LSTM_예측하기_동적</button>
+
 
 <!-- 예측 결과 표시, 동적 표시 -->
 <h2 id="predictionResult2"></h2>
+<h2 id="predictionResult3"></h2>
 <div id="dataContainer"></div>
 
 
@@ -67,7 +71,7 @@
 
 
     // 동적 기간, 예측
-    function makePrediction2() {
+    function makePrediction2(modelType) {
         // 선택된 기간 확인
         const selectedPeriod = document.querySelector('input[name="period"]:checked');
         if (!selectedPeriod) {
@@ -99,8 +103,10 @@
             ]);
         }
         console.log(data)
-        // 서버로 POST 요청 전송
-        fetch('/predict2', {
+
+        // 서버로 POST 요청 전송 - modelType에 따라 분기
+        const endpoint = modelType === 'LSTM' ? '/predict3' : '/predict2';
+        fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -109,16 +115,19 @@
         })
             .then(response => response.json())
             .then(result => {
-                if (result.error) {
-                    document.getElementById('predictionResult2').innerText = "오류: " + result.error;
-                } else {
-                    document.getElementById('predictionResult2').innerText = "예측된 종가: " + result.prediction + " 원";
-                }
-            })
-            .catch(error => {
-                document.getElementById('predictionResult2').innerText = "예측 요청 중 오류 발생";
-                console.error('Error:', error);
-            });
+                const resultElementId = endpoint === '/predict3' ? 'predictionResult3' : 'predictionResult2';
+               if (result.error) {
+                document.getElementById(resultElementId).innerText = "오류: " + result.error;
+            } else {
+                const modelTypeMessage = endpoint === '/predict3' ? "LSTM으로 예측된 종가: " : "RNN으로 예측된 종가: ";
+                document.getElementById(resultElementId).innerText = modelTypeMessage + result.prediction + " 원";
+            }
+        })
+        .catch(error => {
+            const resultElementId = endpoint === '/predict3' ? 'predictionResult3' : 'predictionResult2';
+            document.getElementById(resultElementId).innerText = "예측 요청 중 오류 발생";
+            console.error('Error:', error);
+        });
     }
 
     // 기간에 따른 일 수를 결정하는 함수
