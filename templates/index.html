@@ -16,11 +16,13 @@
     <button type="button" id="fetchDataButton">데이터 가져오기</button>
 </form>
 <!-- 수정 -->
-<button type="button" onclick="makePrediction2('RNN')">RNN_예측하기_동적</button>
-<button type="button" onclick="makePrediction2('LSTM')">LSTM_예측하기_동적</button>
+<button type="button" onclick="makePrediction('RNN')">RNN_예측하기_동적</button>
+<button type="button" onclick="makePrediction('LSTM')">LSTM_예측하기_동적</button>
+<button type="button" onclick="makePrediction('GRU')">GRU_예측하기_동적</button>
 
 
 <!-- 예측 결과 표시, 동적 표시 -->
+<h2 id="predictionResult1"></h2>
 <h2 id="predictionResult2"></h2>
 <h2 id="predictionResult3"></h2>
 <div id="dataContainer"></div>
@@ -71,64 +73,73 @@
 
 
     // 동적 기간, 예측
-    function makePrediction2(modelType) {
-        // 선택된 기간 확인
-        const selectedPeriod = document.querySelector('input[name="period"]:checked');
-        if (!selectedPeriod) {
-            alert('기간을 선택하세요.');
-            return;
-        }
+    // 동적 기간, 예측
+function makePrediction(modelType) {
+    // 선택된 기간 확인
+    const selectedPeriod = document.querySelector('input[name="period"]:checked');
+    if (!selectedPeriod) {
+        alert('기간을 선택하세요.');
+        return;
+    }
 
-        const periodValue = selectedPeriod.value;
-        console.log("periodValue : " + periodValue)
-        // 기간에 따라 데이터를 수집 (여기서는 최대 2일 예시로)
-        const data = [];
-        const days = getDaysBasedOnPeriod(periodValue); // 기간에 따라 일 수 결정
-        console.log("days : " + days)
-        if (days == 1) {
-            data.push([
-                parseFloat(document.querySelector(`[name="open_1"]`).value) || 0,
-                parseFloat(document.querySelector(`[name="low_1"]`).value) || 0,
-                parseFloat(document.querySelector(`[name="high_1"]`).value) || 0,
-                parseFloat(document.querySelector(`[name="close_1"]`).value) || 0
-            ]);
-        }
+    const periodValue = selectedPeriod.value;
+    console.log("periodValue : " + periodValue);
 
-        for (let i = 1; i <= days - 1; i++) {
-            data.push([
-                parseFloat(document.querySelector(`[name="open_${i}"]`).value) || 0,
-                parseFloat(document.querySelector(`[name="low_${i}"]`).value) || 0,
-                parseFloat(document.querySelector(`[name="high_${i}"]`).value) || 0,
-                parseFloat(document.querySelector(`[name="close_${i}"]`).value) || 0
-            ]);
-        }
-        console.log(data)
+    // 기간에 따라 데이터를 수집 (여기서는 최대 2일 예시로)
+    const data = [];
+    const days = getDaysBasedOnPeriod(periodValue); // 기간에 따라 일 수 결정
+    console.log("days : " + days);
+    if (days === 1) {
+        data.push([
+            parseFloat(document.querySelector(`[name="open_1"]`).value) || 0,
+            parseFloat(document.querySelector(`[name="low_1"]`).value) || 0,
+            parseFloat(document.querySelector(`[name="high_1"]`).value) || 0,
+            parseFloat(document.querySelector(`[name="close_1"]`).value) || 0
+        ]);
+    }
 
-        // 서버로 POST 요청 전송 - modelType에 따라 분기
-        const endpoint = modelType === 'LSTM' ? '/predict3' : '/predict2';
-        fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({data: data, period: periodValue})
-        })
-            .then(response => response.json())
-            .then(result => {
-                const resultElementId = endpoint === '/predict3' ? 'predictionResult3' : 'predictionResult2';
-               if (result.error) {
+    for (let i = 1; i <= days - 1; i++) {
+        data.push([
+            parseFloat(document.querySelector(`[name="open_${i}"]`).value) || 0,
+            parseFloat(document.querySelector(`[name="low_${i}"]`).value) || 0,
+            parseFloat(document.querySelector(`[name="high_${i}"]`).value) || 0,
+            parseFloat(document.querySelector(`[name="close_${i}"]`).value) || 0
+        ]);
+    }
+    console.log(data);
+
+    // 서버로 POST 요청 전송 - modelType에 따라 분기
+    const endpoint = modelType === 'RNN' ? '/predict1' : modelType === 'LSTM' ? '/predict2' : '/predict3';
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: data, period: periodValue })
+    })
+        .then(response => response.json())
+        .then(result => {
+            const resultElementId = endpoint === '/predict1' ? 'predictionResult1' :
+                                    endpoint === '/predict2' ? 'predictionResult2' :
+                                    'predictionResult3';
+            if (result.error) {
                 document.getElementById(resultElementId).innerText = "오류: " + result.error;
             } else {
-                const modelTypeMessage = endpoint === '/predict3' ? "LSTM으로 예측된 종가: " : "RNN으로 예측된 종가: ";
+                const modelTypeMessage = endpoint === '/predict1' ? "RNN으로 예측된 종가: " :
+                                         endpoint === '/predict2' ? "LSTM으로 예측된 종가: " :
+                                         "GRU으로 예측된 종가: ";
                 document.getElementById(resultElementId).innerText = modelTypeMessage + result.prediction + " 원";
             }
         })
         .catch(error => {
-            const resultElementId = endpoint === '/predict3' ? 'predictionResult3' : 'predictionResult2';
+            const resultElementId = endpoint === '/predict1' ? 'predictionResult1' :
+                                    endpoint === '/predict2' ? 'predictionResult2' :
+                                    'predictionResult3';
             document.getElementById(resultElementId).innerText = "예측 요청 중 오류 발생";
             console.error('Error:', error);
         });
-    }
+}
+
 
     // 기간에 따른 일 수를 결정하는 함수
     function getDaysBasedOnPeriod(period) {
