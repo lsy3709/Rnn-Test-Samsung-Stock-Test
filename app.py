@@ -3,7 +3,6 @@ import torch
 import numpy as np
 import torch.nn as nn
 import yfinance as yf
-from sklearn.preprocessing import StandardScaler
 app = Flask(__name__)
 
 # 모델 및 스케일러 로드
