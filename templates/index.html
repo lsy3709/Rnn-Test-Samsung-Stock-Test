@@ -8,11 +8,11 @@
 
 <form id="periodForm">
     <label><input type="radio" name="period" value="1d"> 1일</label><br>
-    <label><input type="radio" name="period" value="5d"> 5일</label><br>
-    <label><input type="radio" name="period" value="1mo"> 1개월(실제일수:23일)</label><br>
+    <label><input type="radio" name="period" value="5d"> 5일(실제일수:4일)</label><br>
+    <label><input type="radio" name="period" value="1mo"> 1개월(실제일수:21일)</label><br>
     <label><input type="radio" name="period" value="3mo"> 3개월(실제일수:60일)</label><br>
-    <label><input type="radio" name="period" value="6mo"> 6개월(실제일수:124일)</label><br>
-    <label><input type="radio" name="period" value="1y"> 1년(실제일수:245일)</label><br>
+    <label><input type="radio" name="period" value="6mo"> 6개월(실제일수:123일)</label><br>
+    <label><input type="radio" name="period" value="1y"> 1년(실제일수:243일)</label><br>
     <button type="button" id="fetchDataButton">데이터 가져오기</button>
 </form>
 <!-- 수정 -->
@@ -149,13 +149,13 @@ function makePrediction(modelType) {
             case '5d':
                 return 5;
             case '1mo':
-                return 23; // 약 30일로 간주
+                return 22; // 약 22일로 간주
             case '3mo':
-                return 60; // 약 90일로 간주
+                return 60; // 약 60일로 간주
             case '6mo':
-                return 124; // 약 180일로 간주
+                return 124; // 약 124일로 간주
             case '1y':
-                return 245; // 약 365일로 간주
+                return 244; // 약 244일로 간주
             default:
                 return 1; // 기본값 (1일)
         }

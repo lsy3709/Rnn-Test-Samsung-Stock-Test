@@ -116,7 +116,7 @@ def predict1():  # RNN 모델 예측 엔드포인트
 
 # LSTM 예측 엔드포인트
 @app.route('/predict2', methods=['POST'])
-def predict3():
+def predict2():
     try:
         data = request.get_json()  # JSON 데이터에서 입력 값 추출
         if not data or 'data' not in data or 'period' not in data:
