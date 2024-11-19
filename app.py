@@ -74,7 +74,7 @@ def home():  # 홈 페이지 라우트 설정
 
 # 예측 엔드포인트
 @app.route('/predict1', methods=['POST'])
-def predict2():  # RNN 모델 예측 엔드포인트
+def predict1():  # RNN 모델 예측 엔드포인트
     try:
         data = request.get_json()  # JSON 데이터에서 입력 값 추출
         if not data or 'data' not in data or 'period' not in data:  # 데이터 검증
@@ -85,10 +85,10 @@ def predict2():  # RNN 모델 예측 엔드포인트
         period_days_map = {
             '1d': 1,
             '5d': 4,
-            '1mo': 22,
+            '1mo': 21,
             '3mo': 59,
             '6mo': 123,
-            '1y': 244
+            '1y': 243
         }
 
         if period not in period_days_map:
@@ -127,10 +127,10 @@ def predict3():
         period_days_map = {
             '1d': 1,
             '5d': 4,
-            '1mo': 22,
+            '1mo': 21,
             '3mo': 59,
             '6mo': 123,
-            '1y': 244
+            '1y': 243
         }
 
         if period not in period_days_map:
@@ -158,7 +158,7 @@ def predict3():
 
 # GRU 예측 엔드포인트
 @app.route('/predict3', methods=['POST'])
-def predict4():
+def predict3():
     try:
         data = request.get_json()  # JSON 데이터에서 입력 값 추출
         if not data or 'data' not in data or 'period' not in data:
@@ -169,10 +169,10 @@ def predict4():
         period_days_map = {
             '1d': 1,
             '5d': 4,
-            '1mo': 22,
+            '1mo': 21,
             '3mo': 59,
             '6mo': 123,
-            '1y': 244
+            '1y': 243
         }
 
         if period not in period_days_map:
@@ -199,8 +199,8 @@ def predict4():
         return jsonify({"error": "예측 중 오류가 발생했습니다.", "details": str(e)}), 500
 
 # 요청 일수에 따라 동적으로 받기
-@app.route('/get_stock_data2', methods=['GET'])
-def get_stock_data2():
+@app.route('/get_stock_data', methods=['GET'])
+def get_stock_data():
     period = request.args.get('period', default='5d')  # 기본 요청 기간 설정
     ticker = '005930.KS'  # 삼성전자 종목 코드
     data = yf.download(ticker, period=period, interval='1d')  # 지정된 기간 동안 주식 데이터 가져오기
