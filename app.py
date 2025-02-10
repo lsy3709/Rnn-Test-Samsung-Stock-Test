@@ -85,10 +85,10 @@ def predict1():  # RNN 모델 예측 엔드포인트
         period_days_map = {
             '1d': 1,
             '5d': 4,
-            '1mo': 21,
-            '3mo': 59,
-            '6mo': 123,
-            '1y': 243
+            '1mo': 17,
+            '3mo': 58,
+            '6mo': 116,
+            '1y': 239
         }
 
         if period not in period_days_map:
@@ -127,10 +127,10 @@ def predict2():
         period_days_map = {
             '1d': 1,
             '5d': 4,
-            '1mo': 21,
-            '3mo': 59,
-            '6mo': 123,
-            '1y': 243
+            '1mo': 17,
+            '3mo': 58,
+            '6mo': 116,
+            '1y': 239
         }
 
         if period not in period_days_map:
@@ -169,10 +169,10 @@ def predict3():
         period_days_map = {
             '1d': 1,
             '5d': 4,
-            '1mo': 21,
-            '3mo': 59,
-            '6mo': 123,
-            '1y': 243
+            '1mo': 17,
+            '3mo': 58,
+            '6mo': 116,
+            '1y': 239
         }
 
         if period not in period_days_map:
